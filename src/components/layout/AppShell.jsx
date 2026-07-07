@@ -3,18 +3,12 @@ import Header from "./Header";
 
 export default function AppShell({ children }) {
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      
+    <>
       <Sidebar />
-
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <main className="ml-[260px] min-h-screen bg-[#f8f9ff]">
         <Header />
-
-        <main style={{ padding: 20, overflow: "auto" }}>
-          {children}
-        </main>
-      </div>
-
-    </div>
+        {children}
+      </main>
+    </>
   );
 }
