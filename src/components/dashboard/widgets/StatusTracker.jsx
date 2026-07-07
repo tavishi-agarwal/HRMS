@@ -20,6 +20,13 @@ const statusData = [
     status: "In Review",
     color: "amber",
   },
+  {
+    type: "Travel Claim",
+    ref: "REQ-2023-1123",
+    date: "Oct 12, 2023",
+    status: "In Review",
+    color: "amber",
+  },
 ];
 
 function StatusBadge({ status }) {

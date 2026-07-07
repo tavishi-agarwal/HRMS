@@ -8,7 +8,6 @@ export const NAVIGATION = {
     { name: "Leave", href: "/leave", icon: "event_busy" },
     { name: "Claims", href: "/claims", icon: "assignment_late" },
     { name: "Payroll", href: "/payroll", icon: "payments" },
-    { name: "Notifications", href: "/notifications", icon: "notifications" },
   ],
 
   [ROLES.TEAM_LEAD]: [
