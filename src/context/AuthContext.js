@@ -1,14 +1,28 @@
 "use client";
+
 import { createContext, useContext, useState } from "react";
 import { ROLES } from "@/constants/roles";
-const AuthContext = createContext();
+
+// Export context so useAuth hook can import it directly
+export const AuthContext = createContext(null);
+
+/**
+ * AuthProvider — Wrap your app with this
+ * ========================================
+ * Already added in src/app/layout.js
+ *
+ * Provides: { user, setUser }
+ * user shape: { id, name, email, role }
+ */
 export function AuthProvider({ children }) {
-  // Mock user (replace with API later)
+  // Mock user — replace with real API call (authService.getMe()) after login
   const [user, setUser] = useState({
     id: 1,
-    name: "John Doe",
-    role: ROLES.EMPLOYEE, // Change this to test different roles
+    name: "Abhishek Sharma",
+    email: "abhisheksharma@reviewadda.com",
+    role: ROLES.EMPLOYEE, // Change to ROLES.HR / ROLES.ADMIN to test other dashboards
   });
+
   return (
     <AuthContext.Provider value={{ user, setUser }}>
       {children}
@@ -16,6 +30,13 @@ export function AuthProvider({ children }) {
   );
 }
 
+/**
+ * useAuth — shortcut hook (also available from @/hooks/useAuth)
+ */
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used inside <AuthProvider>");
+  }
+  return context;
 }
