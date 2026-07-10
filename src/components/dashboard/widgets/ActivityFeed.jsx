@@ -21,7 +21,7 @@ const activities = [
 
 export default function ActivityFeed() {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex flex-col">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col">
       <div className="flex justify-between items-center mb-8">
         <h3 className="font-bold text-slate-700">Activity</h3>
         <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">
