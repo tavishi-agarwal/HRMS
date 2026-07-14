@@ -1,5 +1,5 @@
 import AttendancePage from "@/modules/attendance/AttendancePage";
 
-export default function AttendanceRoute() {
+export default function Page() {
   return <AttendancePage />;
 }
