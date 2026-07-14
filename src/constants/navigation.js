@@ -8,15 +8,18 @@ export const NAVIGATION = {
     { name: "Leave", href: "/leave", icon: "event_busy" },
     { name: "Claims", href: "/claims", icon: "assignment_late" },
     { name: "Payroll", href: "/payroll", icon: "payments" },
+    { name: "Events", href: "/events", icon: "event" },
   ],
 
   [ROLES.TEAM_LEAD]: [
     { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
     { name: "Profile", href: "/profile", icon: "person" },
     { name: "Attendance", href: "/attendance/team", icon: "groups" },
-    { name: "Leave Approvals", href: "/leave/approvals", icon: "event_available" },
+    { name: "Leave", href: "/leave", icon: "event_busy" },
+    { name: "Leave Management", href: "/leave-management", icon: "admin_panel_settings" },
     { name: "Claim Approvals", href: "/claims/approvals", icon: "task" },
     { name: "Reports", href: "/reports", icon: "bar_chart" },
+    { name: "Events", href: "/events", icon: "event" },
   ],
 
   [ROLES.HR]: [
@@ -29,15 +32,18 @@ export const NAVIGATION = {
     { name: "Claims", href: "/claims", icon: "assignment_late" },
     { name: "Payroll", href: "/payroll", icon: "payments" },
     { name: "Reports", href: "/reports", icon: "bar_chart" },
+    { name: "Events", href: "/events", icon: "event" },
   ],
 
   [ROLES.ADMIN]: [
     { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
     { name: "Profile", href: "/profile", icon: "person" },
     { name: "Users", href: "/users", icon: "group" },
+    { name: "Leave", href: "/leave", icon: "event_busy" },
     { name: "Leave Management", href: "/leave-management", icon: "admin_panel_settings" },
     { name: "Audit Logs", href: "/audit-logs", icon: "security" },
     { name: "Reports", href: "/reports", icon: "bar_chart" },
     { name: "Settings", href: "/settings", icon: "settings" },
+    { name: "Events", href: "/events", icon: "event" },
   ],
 };
