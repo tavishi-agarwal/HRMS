@@ -47,7 +47,8 @@ export default function LeavePage() {
       getMyLeaves(),
       getMyBalances(),
     ]);
-    setLeaves(Array.isArray(leavesData) ? leavesData : []);
+    const leavesArray = leavesData?.content || (Array.isArray(leavesData) ? leavesData : []);
+    setLeaves(leavesArray);
     setBalances(Array.isArray(balancesData) ? balancesData : []);
     setLoading(false);
   };

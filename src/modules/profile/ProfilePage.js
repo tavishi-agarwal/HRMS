@@ -3,12 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import profileService from "@/services/profile.service";
+import { apiDownload, apiPreview } from "@/lib/api/apiDownload";
+import { ENDPOINTS } from "@/constants/endpoints";
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [docFile, setDocFile] = useState(null);
+  const [docType, setDocType] = useState("");
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   const [formData, setFormData] = useState({
     employeeCode: "",
@@ -68,6 +75,9 @@ export default function ProfilePage() {
         ...formData,
         salary: formData.salary ? parseFloat(formData.salary) : null,
       };
+      if (payload.documents === "") {
+        payload.documents = [];
+      }
       await profileService.saveOrUpdateProfile(user.id, payload);
       setMessage({ type: "success", text: "Profile updated successfully!" });
     } catch (error) {
@@ -77,6 +87,61 @@ export default function ProfilePage() {
       setSaving(false);
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     }
+  };
+
+  const handleUploadDocument = async (e) => {
+    e.preventDefault();
+    if (!docFile || !docType) {
+       setMessage({ type: "error", text: "Please select a document type and file." });
+       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+       return;
+    }
+    if (!formData.id) {
+       setMessage({ type: "error", text: "Please save your profile first before uploading documents." });
+       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+       return;
+    }
+    
+    setUploadingDoc(true);
+    try {
+       await profileService.uploadDocument(formData.id, docType, docFile);
+       setMessage({ type: "success", text: "Document uploaded successfully!" });
+       setDocFile(null);
+       setDocType("");
+       // Reset file input by finding it by id
+       const fileInput = document.getElementById("docFileInput");
+       if (fileInput) fileInput.value = "";
+       // Refetch profile to get the new document list
+       fetchProfile();
+    } catch (err) {
+       setMessage({ type: "error", text: "Failed to upload document." });
+    } finally {
+       setUploadingDoc(false);
+       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    }
+  };
+
+  const handlePreview = async (doc) => {
+    try {
+      const filename = doc.documentName || "document.pdf";
+      const blobUrl = await apiPreview(ENDPOINTS.EMPLOYEES.DOWNLOAD_DOCUMENT(doc.id), filename);
+      setPreviewDoc({
+        name: filename,
+        url: blobUrl,
+        type: filename.toLowerCase().endsWith('pdf') ? 'pdf' : 'image'
+      });
+    } catch (err) {
+      console.error("Failed to preview:", err);
+      setMessage({ type: "error", text: "Failed to load document preview." });
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewDoc?.url) {
+      URL.revokeObjectURL(previewDoc.url);
+    }
+    setPreviewDoc(null);
   };
 
   if (loading) {
@@ -215,6 +280,91 @@ export default function ProfilePage() {
               </div>
             </div>
           </section>
+
+          {/* Documents Section */}
+          <section>
+            <h4 className="text-sm font-bold text-indigo-600 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Documents</h4>
+            
+            {/* Uploaded Documents List */}
+            {formData.documents && formData.documents.length > 0 && (
+              <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {formData.documents.map((doc, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-slate-50">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <span className="material-symbols-rounded text-indigo-500">description</span>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">{doc.documentType}</p>
+                        <p className="text-xs text-slate-500 truncate">{doc.documentName || doc.fileName}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      <button 
+                        type="button"
+                        onClick={() => handlePreview(doc)}
+                        className="text-slate-600 hover:text-indigo-600 p-2 focus:outline-none transition-colors"
+                        title="Preview Document"
+                      >
+                        <span className="material-symbols-rounded text-xl">visibility</span>
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => apiDownload(ENDPOINTS.EMPLOYEES.DOWNLOAD_DOCUMENT(doc.id), doc.documentName || "document")}
+                        className="text-indigo-600 hover:text-indigo-800 p-2 focus:outline-none transition-colors"
+                        title="Download Document"
+                      >
+                        <span className="material-symbols-rounded text-xl">download</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Document Upload Form */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+              <h5 className="text-sm font-bold text-slate-800 mb-4">Upload New Document</h5>
+              <div className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="flex-1 w-full space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">Document Type</label>
+                  <select 
+                    value={docType} 
+                    onChange={(e) => setDocType(e.target.value)} 
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Aadhar Card">Aadhar Card</option>
+                    <option value="PAN Card">PAN Card</option>
+                    <option value="Resume">Resume</option>
+                    <option value="Offer Letter">Offer Letter</option>
+                    <option value="Relieving Letter">Relieving Letter</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="flex-1 w-full space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">Select File</label>
+                  <input 
+                    id="docFileInput"
+                    type="file" 
+                    onChange={(e) => setDocFile(e.target.files[0])} 
+                    className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" 
+                  />
+                </div>
+                <button 
+                  type="button" 
+                  onClick={handleUploadDocument}
+                  disabled={uploadingDoc || !docFile || !docType}
+                  className={`px-6 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-lg shadow-md hover:bg-slate-900 transition-all flex items-center gap-2 ${uploadingDoc || !docFile || !docType ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {uploadingDoc ? (
+                    <span className="material-symbols-rounded animate-spin text-[18px]">sync</span>
+                  ) : (
+                    <span className="material-symbols-rounded text-[18px]">upload</span>
+                  )}
+                  {uploadingDoc ? "Uploading..." : "Upload"}
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
 
         <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
@@ -232,6 +382,30 @@ export default function ProfilePage() {
           </button>
         </div>
       </form>
+
+      {/* Document Preview Modal */}
+      {previewDoc && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <span className="material-symbols-rounded text-indigo-600">visibility</span>
+                {previewDoc.name}
+              </h3>
+              <button type="button" onClick={closePreview} className="text-slate-400 hover:text-slate-600 focus:outline-none p-1 rounded-full hover:bg-slate-200 transition-colors">
+                <span className="material-symbols-rounded">close</span>
+              </button>
+            </div>
+            <div className="p-6 overflow-auto flex-1 bg-slate-100/50 flex justify-center items-start min-h-[50vh]">
+              {previewDoc.type === 'pdf' ? (
+                <iframe src={previewDoc.url} className="w-full h-[70vh] rounded border border-slate-200" title={previewDoc.name} />
+              ) : (
+                <img src={previewDoc.url} alt={previewDoc.name} className="max-w-full rounded shadow-sm" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
