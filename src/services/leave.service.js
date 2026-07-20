@@ -33,6 +33,13 @@ export const getPendingLeaves = async () => {
 };
 
 /**
+ * Get all leaves (for HR/Admin/TL)
+ */
+export const getAllLeaves = async (page = 0, size = 10) => {
+  return await apiGet(`${ENDPOINTS.LEAVE.ALL}?page=${page}&size=${size}`);
+};
+
+/**
  * Approve a leave by ID (HR/TL only)
  */
 export const approveLeave = async (id) => {
@@ -46,11 +53,36 @@ export const rejectLeave = async (id) => {
   return await apiPut(ENDPOINTS.LEAVE.REJECT(id));
 };
 
+/**
+ * Get all leave policies (for HR/Admin)
+ */
+export const getAllPolicies = async () => {
+  return await apiGet(ENDPOINTS.LEAVE_POLICY.ALL);
+};
+
+/**
+ * Update a leave policy by type (for HR/Admin)
+ */
+export const updatePolicy = async (type, defaultAllowed) => {
+  return await apiPut(ENDPOINTS.LEAVE_POLICY.UPDATE(type), { leaveType: type, defaultAllowed });
+};
+
+/**
+ * Get overall leave stats (for HR/Admin)
+ */
+export const getLeaveStats = async () => {
+  return await apiGet(ENDPOINTS.LEAVE.STATS);
+};
+
 export default {
   getMyLeaves,
   getMyBalances,
   applyLeave,
   getPendingLeaves,
+  getAllLeaves,
   approveLeave,
   rejectLeave,
+  getAllPolicies,
+  updatePolicy,
+  getLeaveStats,
 };

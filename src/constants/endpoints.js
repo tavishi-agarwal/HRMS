@@ -21,12 +21,16 @@ export const ENDPOINTS = {
     PROFILE: (userId) => `/api/employees/user/${userId}`,
     CREATE: "/api/employees",
     LIST: "/api/employees",
+    UPLOAD_DOCUMENT: (employeeId) => `/api/employees/${employeeId}/documents`,
+    DOWNLOAD_DOCUMENT: (documentId) => `/api/employees/documents/${documentId}/download`,
   },
   LEAVE: {
     MY_LEAVES: "/api/v1/leaves",
     MY_BALANCES: "/api/v1/leaves/balances",
     APPLY: "/api/v1/leaves",
     PENDING: "/api/v1/leaves/pending",
+    ALL: "/api/v1/leaves/all",
+    STATS: "/api/v1/leaves/status/counts",
     APPROVE: (id) => `/api/v1/leaves/${id}/approve`,
     REJECT: (id) => `/api/v1/leaves/${id}/reject`,
   },
@@ -36,5 +40,15 @@ export const ENDPOINTS = {
     CREATE: "/api/v1/holidays",
     UPDATE: (id) => `/api/v1/holidays/${id}`,
     DELETE: (id) => `/api/v1/holidays/${id}`,
+  },
+  LEAVE_POLICY: {
+    ALL: "/api/v1/leave-policies",
+    UPDATE: (type) => `/api/v1/leave-policies/${type}`,
+  },
+  EVENTS: {
+    UPCOMING: "/api/v1/events/upcoming",
+    CREATE: "/api/v1/events",
+    UPDATE: (id) => `/api/v1/events/${id}`,
+    DELETE: (id) => `/api/v1/events/${id}`,
   },
 };

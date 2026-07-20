@@ -42,4 +42,30 @@ export const apiDownload = async (url, filename = 'download') => {
   }
 };
 
+export const apiPreview = async (url, filename = '') => {
+  try {
+    const response = await httpClient.get(url, {
+      responseType: 'blob',
+    });
+
+    // Guess content type from filename if header is missing
+    let contentType = response.headers['content-type'];
+    if (!contentType || contentType === 'application/octet-stream') {
+      const ext = filename.split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg'].includes(ext)) contentType = 'image/jpeg';
+      else if (ext === 'png') contentType = 'image/png';
+      else if (ext === 'pdf') contentType = 'application/pdf';
+      else contentType = 'application/pdf'; // fallback
+    }
+
+    const blob = new Blob([response.data], { type: contentType });
+    const blobUrl = URL.createObjectURL(blob);
+    
+    return blobUrl;
+  } catch (error) {
+    console.error(`[API PREVIEW Error] ${url}:`, error?.response?.data || error.message);
+    throw error;
+  }
+};
+
 export default apiDownload;
