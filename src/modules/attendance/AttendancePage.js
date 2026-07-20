@@ -16,10 +16,10 @@ export default function AttendancePage() {
   const [attendance, setAttendance] = useState(INITIAL_ATTENDANCE);
   const [timeline, setTimeline] = useState(INITIAL_TIMELINE);
 
-  const [punchedIn, setPunchedIn] = useState(true);
-  const [punchInTime, setPunchInTime] = useState("09:00 AM");
-  const [punchOutTime, setPunchOutTime] = useState("-- : --");
-  const [todayHours, setTodayHours] = useState("08:12");
+  const [punchedIn, setPunchedIn] = useState(false);
+  const [punchInTimestamp, setPunchInTimestamp] = useState(null);
+  const [punchOutTimestamp, setPunchOutTimestamp] = useState(null);
+  const [todayHours, setTodayHours] = useState("00:00:00");
 
   const [toast, setToast] = useState(null);
 
@@ -32,28 +32,23 @@ export default function AttendancePage() {
   }
 
   const summary = useMemo(() => {
-    const currentMonthRecords = attendance.filter(
-      (record) => !record.isPrevMonth && !record.isNextMonth
+    const records = attendance.filter(
+      (record) =>
+        !record.isPrevMonth &&
+        !record.isNextMonth &&
+        record.status !== "future"
     );
 
-    const present = currentMonthRecords.filter(
-      (record) =>
-        record.status === "present" || record.status === "today"
-    ).length;
-
-    const late = currentMonthRecords.filter(
-      (record) => record.status === "late"
-    ).length;
-
-    const absent = currentMonthRecords.filter(
-      (record) => record.status === "absent"
-    ).length;
-
     return {
-      workingDays: 22,
-      present,
-      late,
-      absent,
+      workingDays: records.filter(
+        (record) => !["weekend", "empty"].includes(record.status)
+      ).length,
+      present: records.filter(
+        (record) =>
+          record.status === "present" || record.status === "today"
+      ).length,
+      late: records.filter((record) => record.status === "late").length,
+      absent: records.filter((record) => record.status === "absent").length,
     };
   }, [attendance]);
 
@@ -61,7 +56,7 @@ export default function AttendancePage() {
     <div className="space-y-8">
       {toast && (
         <div
-          className={`fixed right-6 top-20 z-[100] flex items-center gap-3 rounded-xl border px-5 py-3 shadow-lg ${
+          className={`fixed right-6 top-20 z-[100] rounded-xl border px-5 py-3 text-xs font-semibold shadow-lg ${
             toast.type === "success"
               ? "border-emerald-200 bg-emerald-50 text-emerald-800"
               : toast.type === "warning"
@@ -71,17 +66,7 @@ export default function AttendancePage() {
               : "border-indigo-200 bg-indigo-50 text-indigo-800"
           }`}
         >
-          <span className="material-symbols-rounded text-[20px]">
-            {toast.type === "success"
-              ? "check_circle"
-              : toast.type === "warning"
-              ? "warning"
-              : toast.type === "error"
-              ? "error"
-              : "info"}
-          </span>
-
-          <p className="text-xs font-semibold">{toast.message}</p>
+          {toast.message}
         </div>
       )}
 
@@ -101,7 +86,6 @@ export default function AttendancePage() {
         <div className="xl:col-span-2">
           <AttendanceCalendar
             attendance={attendance}
-            punchInTime={punchInTime}
             showToast={showToast}
           />
         </div>
@@ -110,10 +94,10 @@ export default function AttendancePage() {
           <PunchCard
             punchedIn={punchedIn}
             setPunchedIn={setPunchedIn}
-            punchInTime={punchInTime}
-            setPunchInTime={setPunchInTime}
-            punchOutTime={punchOutTime}
-            setPunchOutTime={setPunchOutTime}
+            punchInTimestamp={punchInTimestamp}
+            setPunchInTimestamp={setPunchInTimestamp}
+            punchOutTimestamp={punchOutTimestamp}
+            setPunchOutTimestamp={setPunchOutTimestamp}
             todayHours={todayHours}
             setTodayHours={setTodayHours}
             setAttendance={setAttendance}

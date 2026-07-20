@@ -2,13 +2,34 @@
 
 import { useEffect, useState } from "react";
 
+function formatElapsed(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, "0"))
+    .join(":");
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return "-- : --";
+
+  return new Date(timestamp).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function PunchCard({
   punchedIn,
   setPunchedIn,
-  punchInTime,
-  setPunchInTime,
-  punchOutTime,
-  setPunchOutTime,
+  punchInTimestamp,
+  setPunchInTimestamp,
+  punchOutTimestamp,
+  setPunchOutTimestamp,
   todayHours,
   setTodayHours,
   setAttendance,
@@ -38,6 +59,10 @@ export default function PunchCard({
           year: "numeric",
         })
       );
+
+      if (punchedIn && punchInTimestamp) {
+        setTodayHours(formatElapsed(Date.now() - punchInTimestamp));
+      }
     }
 
     updateClock();
@@ -45,93 +70,80 @@ export default function PunchCard({
     const timer = window.setInterval(updateClock, 1000);
 
     return () => window.clearInterval(timer);
-  }, []);
-
-  function getCurrentShortTime() {
-    return new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
+  }, [punchedIn, punchInTimestamp, setTodayHours]);
 
   function handlePunchToggle() {
-    const time = getCurrentShortTime();
+    const now = Date.now();
 
-    if (punchedIn) {
-      setPunchedIn(false);
-      setPunchOutTime(time);
-      setTodayHours("08:12");
+    if (!punchedIn) {
+      setPunchedIn(true);
+      setPunchInTimestamp(now);
+      setPunchOutTimestamp(null);
+      setTodayHours("00:00:00");
 
-      setAttendance((previous) =>
-        previous.map((record) =>
+      setAttendance((records) =>
+        records.map((record) =>
           record.status === "today"
             ? {
                 ...record,
-                status: "present",
-                outTime: time,
-                liveHours: "08h 12m",
+                inTime: formatTime(now),
+                outTime: null,
               }
             : record
         )
       );
 
-      setTimeline((previous) => [
+      setTimeline([
         {
-          id: Date.now(),
-          title: "Punched Out",
-          description: `${time} • Noida Office`,
-          type: "error",
+          id: now,
+          title: "Punched In",
+          description: `${formatTime(now)} • Noida Office`,
+          type: "success",
         },
-        ...previous.filter(
-          (item) => item.title !== "Currently Active"
-        ),
+        {
+          id: now + 1,
+          title: "Currently Active",
+          description: "Live tracking session",
+          type: "warning",
+        },
       ]);
 
-      showToast(
-        `Successfully clocked out at ${time}.`,
-        "success"
-      );
-
+      showToast("Successfully clocked in.", "success");
       return;
     }
 
-    setPunchedIn(true);
-    setPunchInTime(time);
-    setPunchOutTime("-- : --");
-    setTodayHours("00:00");
+    setPunchedIn(false);
+    setPunchOutTimestamp(now);
 
-    setAttendance((previous) =>
-      previous.map((record) =>
-        record.id === "oct-5"
+    const finalElapsed = punchInTimestamp
+      ? formatElapsed(now - punchInTimestamp)
+      : "00:00:00";
+
+    setTodayHours(finalElapsed);
+
+    setAttendance((records) =>
+      records.map((record) =>
+        record.status === "today"
           ? {
               ...record,
-              status: "today",
-              inTime: time,
-              outTime: null,
+              status: "present",
+              outTime: formatTime(now),
             }
           : record
       )
     );
 
-    setTimeline([
+    setTimeline((items) => [
       {
-        id: Date.now(),
-        title: "Punched In",
-        description: `${time} • Noida Office`,
-        type: "success",
+        id: now,
+        title: "Punched Out",
+        description: `${formatTime(now)} • Noida Office`,
+        type: "error",
       },
-      {
-        id: Date.now() + 1,
-        title: "Currently Active",
-        description: "Live tracking session",
-        type: "warning",
-      },
+      ...items.filter((item) => item.title !== "Currently Active"),
     ]);
 
-    showToast(
-      "Successfully clocked in. Have a productive day.",
-      "success"
-    );
+    showToast("Successfully clocked out.", "success");
   }
 
   return (
@@ -160,22 +172,22 @@ export default function PunchCard({
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-indigo-50/50 p-4 text-left">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+          <p className="text-[9px] font-bold uppercase text-slate-400">
             Punch In
           </p>
 
           <p className="mt-1 text-sm font-black text-slate-800">
-            {punchInTime}
+            {formatTime(punchInTimestamp)}
           </p>
         </div>
 
         <div className="rounded-2xl bg-slate-50 p-4 text-left">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+          <p className="text-[9px] font-bold uppercase text-slate-400">
             Punch Out
           </p>
 
           <p className="mt-1 text-sm font-black text-slate-800">
-            {punchOutTime}
+            {formatTime(punchOutTimestamp)}
           </p>
         </div>
       </div>
@@ -183,10 +195,10 @@ export default function PunchCard({
       <button
         type="button"
         onClick={handlePunchToggle}
-        className={`mt-6 w-full rounded-xl py-3 text-xs font-bold text-white shadow-md transition active:scale-[0.98] ${
+        className={`mt-6 w-full rounded-xl py-3 text-xs font-bold text-white shadow-md ${
           punchedIn
-            ? "bg-rose-500 shadow-rose-100 hover:bg-rose-600"
-            : "bg-emerald-600 shadow-emerald-100 hover:bg-emerald-700"
+            ? "bg-rose-500 hover:bg-rose-600"
+            : "bg-emerald-600 hover:bg-emerald-700"
         }`}
       >
         {punchedIn ? "Punch Out Now" : "Punch In Now"}

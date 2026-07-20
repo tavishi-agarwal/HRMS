@@ -8,7 +8,11 @@ export default function AttendanceCalendar({
   showToast,
 }) {
   function handleDayClick(record) {
-    if (record.isPrevMonth || record.isNextMonth) {
+    if (
+      record.isPrevMonth ||
+      record.isNextMonth ||
+      record.status === "future"
+    ) {
       return;
     }
 
@@ -24,7 +28,9 @@ export default function AttendanceCalendar({
 
     if (record.status === "today") {
       showToast(
-        `Today: Active session started at ${record.inTime || punchInTime}.`,
+        record.inTime
+          ? `Today: Active session started at ${record.inTime}.`
+          : "Today: You have not punched in yet.",
         "info"
       );
       return;
@@ -39,10 +45,7 @@ export default function AttendanceCalendar({
     }
 
     if (record.status === "absent") {
-      showToast(
-        `Oct ${record.dayNumber}: Marked absent.`,
-        "error"
-      );
+      showToast(`Oct ${record.dayNumber}: Marked absent.`, "error");
       return;
     }
 
@@ -105,6 +108,8 @@ export default function AttendanceCalendar({
           const outsideMonth =
             record.isPrevMonth || record.isNextMonth;
 
+          const isFuture = record.status === "future";
+
           return (
             <button
               key={record.id}
@@ -114,7 +119,9 @@ export default function AttendanceCalendar({
               className={`relative min-h-[74px] border border-slate-100 p-2 text-left transition ${
                 outsideMonth
                   ? "cursor-default bg-slate-50/30 text-slate-300"
-                  : "cursor-pointer hover:border-indigo-200 hover:bg-indigo-50/20"
+                  : isFuture
+                  ? "cursor-default bg-white"
+                  : "cursor-pointer bg-white hover:border-indigo-200 hover:bg-indigo-50/20"
               } ${
                 record.status === "today"
                   ? "z-10 rounded-xl bg-indigo-600 text-white shadow-md ring-4 ring-white hover:bg-indigo-600"
@@ -158,16 +165,20 @@ export default function AttendanceCalendar({
                   </span>
 
                   <p className="mt-1 text-[8px] text-indigo-100">
-                    In: {record.inTime || punchInTime}
+                    {record.inTime
+                      ? `In: ${record.inTime}`
+                      : "Not punched in"}
                   </p>
                 </div>
               )}
 
-              {record.inTime && record.status !== "today" && (
-                <p className="mt-3 text-[8px] font-semibold text-slate-400">
-                  In: {record.inTime}
-                </p>
-              )}
+              {record.inTime &&
+                record.status !== "today" &&
+                record.status !== "future" && (
+                  <p className="mt-3 text-[8px] font-semibold text-slate-400">
+                    In: {record.inTime}
+                  </p>
+                )}
 
               {record.status === "weekend" && (
                 <span className="absolute bottom-1 right-1 rounded bg-white px-1 text-[7px] font-bold text-slate-400">
@@ -193,6 +204,7 @@ function Legend({ color, label }) {
   return (
     <div className="flex items-center gap-2">
       <span className={`h-2 w-2 rounded-full ${color}`} />
+
       <span className="text-[10px] font-semibold text-slate-500">
         {label}
       </span>

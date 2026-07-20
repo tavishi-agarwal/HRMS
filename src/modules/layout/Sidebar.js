@@ -11,31 +11,44 @@ export default function Sidebar() {
 
   const navItems = NAVIGATION[user?.role] || [];
 
+  function isActive(href) {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[260px] bg-white border-r border-slate-100 flex flex-col z-50">
+    <aside className="fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-col border-r border-slate-100 bg-white">
       {/* Logo */}
-      <div className="px-6 py-8 flex items-center gap-3">
-        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
-          <span className="material-symbols-rounded">grid_view</span>
+      <div className="flex items-center gap-3 px-6 py-8">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+          <span className="material-symbols-rounded text-[22px]">
+            grid_view
+          </span>
         </div>
 
         <div>
-          <h1 className="text-xl font-extrabold text-indigo-900 leading-none">HRMS</h1>
-          <p className="text-[10px] font-bold text-slate-400 tracking-widest mt-1">
-            HR MANAGEMENT
+          <h1 className="text-xl font-extrabold leading-none text-indigo-900">
+            HRMS
+          </h1>
+
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            HR Management
           </p>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <p className="px-4 mb-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+      <nav className="flex-1 overflow-y-auto px-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <p className="mb-3 px-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
           Main
         </p>
 
         <div className="space-y-1">
           {navItems.map((item) => {
-            const active = pathname === item.href;
+            const active = isActive(item.href);
 
             return (
               <Link
@@ -43,15 +56,15 @@ export default function Sidebar() {
                 href={item.href}
                 className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
                   active
-                    ? "bg-indigo-600 text-white shadow-md"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
                     : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600"
                 }`}
               >
-                <span className="material-symbols-rounded text-[20px] shrink-0">
+                <span className="material-symbols-rounded shrink-0 text-[20px]">
                   {item.icon}
                 </span>
 
-                <span className="text-sm font-semibold whitespace-nowrap">
+                <span className="truncate whitespace-nowrap text-sm font-semibold">
                   {item.name || item.label}
                 </span>
               </Link>
@@ -61,28 +74,19 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="px-4 pb-6 mt-auto">
-        <div className="border-t border-slate-100 pt-4 space-y-1">
-          <Link
-            href="/settings"
-            className="flex items-center gap-3 w-full px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-50"
+      <div className="mt-auto px-4 pb-6">
+        <div className="border-t border-slate-100 pt-4">
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-slate-500 transition-all hover:bg-slate-50 hover:text-indigo-600"
           >
-            <span className="material-symbols-rounded text-[20px]">settings</span>
-            <span className="text-sm font-medium">Settings & Support</span>
-          </Link>
+            <span className="material-symbols-rounded shrink-0 text-[20px]">
+              help
+            </span>
+
+            <span className="text-sm font-medium">Support</span>
+          </button>
         </div>
-
-        {/* User Card */}
-        <Link href="/profile" className="mt-4 p-3 bg-indigo-50 rounded-xl flex items-center gap-3 border border-indigo-100 hover:bg-indigo-100 transition-colors cursor-pointer">
-          <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0">
-            {user?.name?.charAt(0) || "U"}
-          </div>
-
-          <div className="overflow-hidden">
-            <p className="text-sm font-bold text-indigo-900 truncate">{user?.name || "User"}</p>
-            <p className="text-[10px] text-indigo-400 truncate">{user?.email || "user@example.com"}</p>
-          </div>
-        </Link>
       </div>
     </aside>
   );
