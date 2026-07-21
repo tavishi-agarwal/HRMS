@@ -23,9 +23,10 @@ export default function EmployeeDashboard() {
           <button className="px-6 py-2 bg-indigo-600 text-white text-xs font-bold rounded-md shadow-sm">
             Overview
           </button>
+          {/*
           <button className="px-6 py-2 text-slate-600 text-xs font-bold rounded-md">
             Performance
-          </button>
+          </button>  */}
         </div>
       </div>
 

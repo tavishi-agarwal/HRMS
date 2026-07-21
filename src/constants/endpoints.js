@@ -67,4 +67,11 @@ export const ENDPOINTS = {
     UPDATE: (id) => `/api/v1/claims/${id}`,
     DELETE: (id) => `/api/v1/claims/${id}`,
   },
+  ATTENDANCE: {
+  TODAY: "/api/v1/attendance/today",
+  PUNCH_IN: "/api/v1/attendance/punch-in",
+  PUNCH_OUT: "/api/v1/attendance/punch-out",
+  ANNUAL: "/api/v1/attendance/annual",
+  RANGE: "/api/v1/attendance/range",
+},
 };
